@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Logger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        /* Toggle Button Styling */
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .toggle-button {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-button.active-expense {
+            background: #ff6666;
+            color: white;
+        }
+
+        .toggle-button.active-income {
+            background: #28a745;
+            color: white;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            margin-top: 5px;
+            width: calc(100% - 24px);
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: none;
+            height: 60px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Log Your Transaction</h2>
+
+        <form id="transactionForm">
+            <label>Type</label>
+            <div class="toggle-container">
+                <div class="toggle-button active-expense" id="expenseBtn" onclick="setTransactionType('Expense')">Expense</div>
+                <div class="toggle-button" id="incomeBtn" onclick="setTransactionType('Income')">Income</div>
+            </div>
+            <input type="hidden" name="type" id="transactionType" value="Expense">
+
+            <label>Date</label>
+            <input type="date" name="date" id="date" required>
+
+            <label>Amount</label>
+            <input type="number" name="amount" required>
+
+            <label>Description</label>
+            <input type="text" name="description" required>
+
+            <label>Category</label>
+            <select name="category" id="category"></select>
+
+            <label>Mode</label>
+            <select name="mode">
+                <option value="Cash">Cash</option>
+                <option value="HDFC Debit Card">HDFC Debit Card</option>
+                <option value="HDFC UPI">HDFC UPI</option>
+                <option value="Amazon Pay Balance">Amazon Pay Balance</option>
+                <option value="PhonePe">PhonePe</option>
+                <option value="Kotak Credit Card">Kotak Credit Card</option>
+                <option value="Amazon Pay">Amazon Pay</option>
+                <option value="Kotak UPI">Kotak UPI</option>
+                <option value="Kotak Bank">Kotak Bank</option>
+                <option value="HDFC Bank">HDFC Bank</option>
+                <option value="Kotak Debit Card">Kotak Debit Card</option>
+                <option value="Google Pay">Google Pay</option>
+                <option value="HDFC Credit Card">HDFC Credit Card</option>
+            </select>
+
+            <label>Paid To</label>
+            <input type="text" name="paidTo">
+
+            <label>Paid By</label>
+            <select name="paidBy">
+                <option value="Sai Vinay" selected>Sai Vinay</option>
+            </select>
+
+            <label>Notes</label>
+            <textarea name="notes"></textarea>
+
+            <button type="submit" id="submitButton">Submit</button>
+        </form>
+
+        <p class="loading" id="loadingText">Submitting transaction...</p>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        // Set today's date as default
+        document.getElementById("date").valueAsDate = new Date();
+
+        // Expense & Income categories
+        const categories = {
+            "Expense": [
+                "Food", "Gifts", "Health/medical", "Home", "Transportation", "Personal", "Donations",
+                "Utilities", "Travel", "Debt", "Rent", "Groceries", "Vegetables", "Fuel", "Investment"
+            ],
+            "Income": [
+                "Savings", "Paycheck", "Bonus", "Interest", "Other", "Amount Received", "Credit"
+            ]
+        };
+
+        function updateCategory() {
+            const type = document.getElementById("transactionType").value;
+            const categorySelect = document.getElementById("category");
+
+            // Clear existing options
+            categorySelect.innerHTML = "";
+
+            // Add new options
+            categories[type].forEach(cat => {
+                let option = document.createElement("option");
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // Initialize category dropdown on page load
+        updateCategory();
+
+        function setTransactionType(type) {
+            document.getElementById("transactionType").value = type;
+            document.getElementById("expenseBtn").classList.toggle("active-expense", type === "Expense");
+            document.getElementById("incomeBtn").classList.toggle("active-income", type === "Income");
+            updateCategory();
+        }
+
+        document.getElementById("transactionForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const submitButton = document.getElementById("submitButton");
+    const loadingText = document.getElementById("loadingText");
+    const statusText = document.getElementById("status");
+
+    // Disable submit button & show loading text
+    submitButton.disabled = true;
+    loadingText.style.display = "block";
+    statusText.innerText = "";
+
+    const formData = new FormData(this);
+    const url = "https://script.google.com/macros/s/AKfycbzj8WozC2QQuA_mWlTttFxmRm3MEa7FuQXmnfHx4ILFVyz1AN4ZDzGhXQsg45bJ--VE/exec"; // Your Google Apps Script Web App URL
+
+    fetch(url, {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        const type = document.getElementById("transactionType").value;
+        statusText.innerText = type === "Expense" ? "✅ Expense Logged!" : "✅ Income Logged!";
+
+        // Reset the form
+        document.getElementById("transactionForm").reset();
+        document.getElementById("date").valueAsDate = new Date(); // Reset date to today
+        updateCategory(); // Reset category dropdown
+    })
+    .catch(error => {
+        statusText.innerText = "❌ Error logging transaction.";
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+        loadingText.style.display = "none";
+    });
+});
+
+    </script>
+
+</body>
+</html>
