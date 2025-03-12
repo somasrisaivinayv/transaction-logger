@@ -179,11 +179,11 @@
         // Expense & Income categories
         const categories = {
             "Expense": [
-                "Food", "Gifts", "Health/medical", "Home", "Transportation", "Personal", "Donations",
-                "Utilities", "Travel", "Debt", "Rent", "Groceries", "Vegetables", "Fuel", "Investment"
+                "Food", "Transportation", "Health/medical", "Home", "Gifts", "Personal", "Donations",
+                "Utilities/Bills", "Travel", "Debt", "Rent", "Groceries", "Vegetables", "Fuel", "Investment"
             ],
             "Income": [
-                "Savings", "Paycheck", "Bonus", "Interest", "Other", "Amount Received", "Credit"
+                "Savings", "Paycheck", "Bonus", "Interest", "Other", "Amount Received", "Credit", "Refund"
             ]
         };
 
@@ -226,7 +226,7 @@
     statusText.innerText = "";
 
     const formData = new FormData(this);
-    const url = "https://script.google.com/macros/s/AKfycbzj8WozC2QQuA_mWlTttFxmRm3MEa7FuQXmnfHx4ILFVyz1AN4ZDzGhXQsg45bJ--VE/exec"; // Your Google Apps Script Web App URL
+    const url = "https://script.google.com/macros/s/AKfycbx2EZJr_vDQEIKeaZ_Qjfu2uNuKS9LXFbfTsQz0oqslq7_czzfdyYkKsW4XvLrukog7/exec"; // Your Google Apps Script Web App URL
 
     fetch(url, {
         method: "POST",
