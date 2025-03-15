@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -66,7 +67,9 @@
             font-size: 14px;
         }
 
-        input, select, textarea {
+        input,
+        select,
+        textarea {
             padding: 10px;
             margin-top: 5px;
             width: calc(100% - 24px);
@@ -112,6 +115,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -120,7 +124,8 @@
         <form id="transactionForm">
             <label>Type</label>
             <div class="toggle-container">
-                <div class="toggle-button active-expense" id="expenseBtn" onclick="setTransactionType('Expense')">Expense</div>
+                <div class="toggle-button active-expense" id="expenseBtn" onclick="setTransactionType('Expense')">
+                    Expense</div>
                 <div class="toggle-button" id="incomeBtn" onclick="setTransactionType('Income')">Income</div>
             </div>
             <input type="hidden" name="type" id="transactionType" value="Expense">
@@ -155,12 +160,13 @@
             </select>
 
             <label>Paid To</label>
-            <input type="text" name="paidTo">
+            <select name="paidTo" id="paidTo"></select>
+            <input type="text" name="paidToInput" id="paidToInput" style="display: none;">
 
             <label>Paid By</label>
-            <select name="paidBy">
-                <option value="Sai Vinay" selected>Sai Vinay</option>
-            </select>
+            <input type="text" name="paidBy" id="paidBy">
+            <select name="paidBySelect" id="paidBySelect" style="display: none;"></select>
+
 
             <label>Notes</label>
             <textarea name="notes"></textarea>
@@ -205,53 +211,88 @@
 
         // Initialize category dropdown on page load
         updateCategory();
+        setTransactionType("Expense")
 
         function setTransactionType(type) {
             document.getElementById("transactionType").value = type;
             document.getElementById("expenseBtn").classList.toggle("active-expense", type === "Expense");
             document.getElementById("incomeBtn").classList.toggle("active-income", type === "Income");
             updateCategory();
+
+            const paidToDropdown = document.getElementById("paidTo");
+            const paidToInput = document.getElementById("paidToInput");
+            const paidByInput = document.getElementById("paidBy");
+            const paidByDropdown = document.getElementById("paidBySelect");
+
+            if (type === "Income") {
+                // "Paid To" as dropdown
+                paidToDropdown.style.display = "block";
+                paidToInput.style.display = "none";
+
+                // Populate dropdown with options
+                paidToDropdown.innerHTML = `<option value="Sai Vinay">Sai Vinay</option>`;
+
+                // "Paid By" as input
+                paidByInput.style.display = "block";
+                paidByDropdown.style.display = "none";
+                paidByInput.value = ""; // Clear input field
+
+            } else {
+                // "Paid To" as input
+                paidToDropdown.style.display = "none";
+                paidToInput.style.display = "block";
+                paidToInput.value = ""; // Clear input field
+
+                // "Paid By" as dropdown
+                paidByInput.style.display = "none";
+                paidByDropdown.style.display = "block";
+
+                // Populate dropdown with options
+                paidByDropdown.innerHTML = `<option value="Sai Vinay">Sai Vinay</option>`;
+            }
         }
 
-        document.getElementById("transactionForm").addEventListener("submit", function(e) {
-    e.preventDefault();
 
-    const submitButton = document.getElementById("submitButton");
-    const loadingText = document.getElementById("loadingText");
-    const statusText = document.getElementById("status");
+        document.getElementById("transactionForm").addEventListener("submit", function (e) {
+            e.preventDefault();
 
-    // Disable submit button & show loading text
-    submitButton.disabled = true;
-    loadingText.style.display = "block";
-    statusText.innerText = "";
+            const submitButton = document.getElementById("submitButton");
+            const loadingText = document.getElementById("loadingText");
+            const statusText = document.getElementById("status");
 
-    const formData = new FormData(this);
-    const url = "https://script.google.com/macros/s/AKfycbx2EZJr_vDQEIKeaZ_Qjfu2uNuKS9LXFbfTsQz0oqslq7_czzfdyYkKsW4XvLrukog7/exec"; // Your Google Apps Script Web App URL
+            // Disable submit button & show loading text
+            submitButton.disabled = true;
+            loadingText.style.display = "block";
+            statusText.innerText = "";
 
-    fetch(url, {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.text())
-    .then(data => {
-        const type = document.getElementById("transactionType").value;
-        statusText.innerText = type === "Expense" ? "✅ Expense Logged!" : "✅ Income Logged!";
+            const formData = new FormData(this);
+            const url = "https://script.google.com/macros/s/AKfycbx2EZJr_vDQEIKeaZ_Qjfu2uNuKS9LXFbfTsQz0oqslq7_czzfdyYkKsW4XvLrukog7/exec"; // Your Google Apps Script Web App URL
 
-        // Reset the form
-        document.getElementById("transactionForm").reset();
-        document.getElementById("date").valueAsDate = new Date(); // Reset date to today
-        updateCategory(); // Reset category dropdown
-    })
-    .catch(error => {
-        statusText.innerText = "❌ Error logging transaction.";
-    })
-    .finally(() => {
-        submitButton.disabled = false;
-        loadingText.style.display = "none";
-    });
-});
+            fetch(url, {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.text())
+                .then(data => {
+                    const type = document.getElementById("transactionType").value;
+                    statusText.innerText = type === "Expense" ? "✅ Expense Logged!" : "✅ Income Logged!";
+
+                    // Reset the form
+                    document.getElementById("transactionForm").reset();
+                    document.getElementById("date").valueAsDate = new Date(); // Reset date to today
+                    updateCategory(); // Reset category dropdown
+                })
+                .catch(error => {
+                    statusText.innerText = "❌ Error logging transaction.";
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    loadingText.style.display = "none";
+                });
+        });
 
     </script>
 
 </body>
+
 </html>
