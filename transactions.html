@@ -211,7 +211,6 @@
 
         // Initialize category dropdown on page load
         updateCategory();
-        setTransactionType("Expense")
 
         function setTransactionType(type) {
             document.getElementById("transactionType").value = type;
@@ -252,6 +251,8 @@
             }
         }
 
+        setTransactionType('Expense');
+
 
         document.getElementById("transactionForm").addEventListener("submit", function (e) {
             e.preventDefault();
@@ -260,13 +261,36 @@
             const loadingText = document.getElementById("loadingText");
             const statusText = document.getElementById("status");
 
-            // Disable submit button & show loading text
             submitButton.disabled = true;
             loadingText.style.display = "block";
             statusText.innerText = "";
 
             const formData = new FormData(this);
-            const url = "https://script.google.com/macros/s/AKfycbzohIjiUKrwpab_cWmseVMy8c-pLzKYDHjUP5KQjgM4iKKwZJJLxqcKlb2KGOq3i_Qb/exec"; // Your Google Apps Script Web App URL
+
+            // Get transaction type
+            const type = document.getElementById("transactionType").value;
+
+            // Handle Paid To field
+            const paidToDropdown = document.getElementById("paidTo");
+            const paidToInput = document.getElementById("paidToInput");
+
+            if (type === "Expense") {
+                formData.set("paidTo", paidToInput.value || "");
+            } else {
+                formData.set("paidTo", paidToDropdown.value || "");
+            }
+
+            // Handle Paid By field
+            const paidByInput = document.getElementById("paidBy");
+            const paidByDropdown = document.getElementById("paidBySelect");
+
+            if (type === "Expense") {
+                formData.set("paidBy", paidByDropdown.value || "");
+            } else {
+                formData.set("paidBy", paidByInput.value || "");
+            }
+
+            const url = "https://script.google.com/macros/s/AKfycbx2s8QtQP8fRQV6VeV4Gx7TJJTPIiRIN3WlQ_8c1ePBGp-xz74BhqljXmRPFTJuueD2/exec";
 
             fetch(url, {
                 method: "POST",
@@ -274,13 +298,10 @@
             })
                 .then(response => response.text())
                 .then(data => {
-                    const type = document.getElementById("transactionType").value;
                     statusText.innerText = type === "Expense" ? "✅ Expense Logged!" : "✅ Income Logged!";
-
-                    // Reset the form
                     document.getElementById("transactionForm").reset();
-                    document.getElementById("date").valueAsDate = new Date(); // Reset date to today
-                    updateCategory(); // Reset category dropdown
+                    document.getElementById("date").valueAsDate = new Date(); // Reset date
+                    updateCategory();
                 })
                 .catch(error => {
                     statusText.innerText = "❌ Error logging transaction.";
